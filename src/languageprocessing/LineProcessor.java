@@ -29,16 +29,41 @@ public class LineProcessor {
         // you need.
         HashSet<String> email = new HashSet();
         
-        String pattern = "()";
+        //name 'at' domain 'dot' extention
+        String pattern = 
+                "([A-Za-z0-9+_.-]+)\\s*"
+                + "(?<!@|[^\\w|\\d]at[^\\w|\\d])"
+                + "(@|[^\\w|\\d]at[^\\w|\\d])"
+                + "(?!@|[^\\w|\\d]at[^\\w|\\d])\\s*"
+                + "([a-zA-Z0-9+]+)\\s*"
+                + "((?<!\\.|[^\\w|\\d]dot[^\\w|\\d])"
+                + "(\\.|[^\\w|\\d]dot[^\\w|\\d])"
+                + "(?!\\.|[^\\w|\\d]dot[^\\w|\\d])\\s*"
+                + "([a-z]{2,8}))\\s*"
+                + "((?<!\\.|[^\\w|\\d]dot[^\\w|\\d])"
+                + "(\\.|[^\\w|\\d]dot[^\\w|\\d])"
+                + "(?!\\.|[^\\w|\\d]dot[^\\w|\\d])\\s*"
+                + "([a-z]{2,8}))?\\s*"
+                + "((?<!\\.|[^\\w|\\d]dot[^\\w|\\d])"
+                + "(\\.|[^\\w|\\d]dot[^\\w|\\d])"
+                + "(?!\\.|[^\\w|\\d]dot[^\\w|\\d])\\s*"
+                + "([a-z]{2,8}))?";
 
         Pattern r = Pattern.compile(pattern);
 
         Matcher m = r.matcher(line);
 
-        if (m.find()) {
-            email.add(m.group());
+        while (m.find()) {
+            if(m.group(10) != null){
+                email.add(m.group(1) + '@' + m.group(3) + '.' + m.group(6) + '.' + m.group(9) + '.' + m.group(12));
+            } else if(m.group(7) != null){
+                email.add(m.group(1) + '@' + m.group(3) + '.' + m.group(6) + '.' + m.group(9));
+            }else {
+                email.add(m.group(1) + '@' + m.group(3) + '.' + m.group(6));
+            }
+            
         }
-        return new HashSet<String>();  // returning empty => no result found
+        return email;  // returning empty => no result found
     }
 
     private HashSet<String> findPhoneNumbers(final String line) {
@@ -47,16 +72,22 @@ public class LineProcessor {
         // you need.
         HashSet<String> phoneNumber = new HashSet();
         
-        String pattern = "()";
+        String pattern = 
+                  "[^\\d-;/_\\.]+\\s*"
+                + "\\(?(\\d{3})\\)?"
+                + "[-\\.\\s]*"
+                + "(\\d{3})"
+                + "[-\\.\\s]*"
+                + "(\\d{4})\\b+";
 
         Pattern r = Pattern.compile(pattern);
 
         Matcher m = r.matcher(line);
 
-        if (m.find()) {
-            phoneNumber.add(m.group());
+        while (m.find()) {
+            phoneNumber.add(m.group(1) + '-' + m.group(2) + '-' + m.group(3));
         }
-        return new HashSet<String>();  // returning empty => no result found
+        return phoneNumber;  // returning empty => no result found
     }
 
     public HashSet<String> processLine(String line) {
